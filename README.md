@@ -32,7 +32,7 @@ https://play.google.com/store/apps/details?id=com.h3.rabbitplanet
 
 &nbsp;
 
-# 핵심 기능
+## ❗핵심 기능
 1. 
    > - 
    > - 
@@ -48,7 +48,7 @@ https://play.google.com/store/apps/details?id=com.h3.rabbitplanet
 </details>
 &nbsp;
 
-# 어라
+## ❗어라
 1. 
    > - 
    > - 
