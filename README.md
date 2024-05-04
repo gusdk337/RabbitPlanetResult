@@ -26,13 +26,13 @@ https://play.google.com/store/apps/details?id=com.h3.rabbitplanet
 
 ## ✏️팀 내 맡은 역할
 - 팀장
-- 메인 게임 홀수 스테이지
-- [미니 게임 4개(플래피 래빗, 미로 찾기, 점핑 문, 큐브 맞추기)](#어라)
+- 메인 게임 홀수 스테이지[여기](#메인-게임)
+- 미니 게임 4개(플래피 래빗, 미로 찾기, 점핑 문, 큐브 맞추기)[여기](#미니-게임)
 - 장애물 3종(독 장판, 스팀, 불)
 
 &nbsp;
 
-## ❗핵심 기능
+## ❗메인 게임
 1. 
    > - 
    > - 
@@ -48,7 +48,7 @@ https://play.google.com/store/apps/details?id=com.h3.rabbitplanet
 </details>
 &nbsp;
 
-## ❗어라
+## ❗미니 게임
 1. 
    > - 
    > - 
