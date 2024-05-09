@@ -91,148 +91,123 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FlappyPlayer : MonoBehaviour
+public class MatchingMain : MonoBehaviour
 {
-    public enum eState
+    public GameObject[] TotemPrefabs;
+    public GameObject TotemSetPrefab;
+
+    private float repeatInterval = 4f;
+
+    public GameObject basicTotem;
+    public UIMatchingDirector director;
+
+    private void Awake()
     {
-        Idle, Jump
+        //처음 시작하면 기본 토템이 생김
+        GameObject basicTotemGo = Instantiate(basicTotem);
+
+        basicTotemGo.transform.position = new Vector3(-0.0561285f, 29.79639f, 17.74149f);
+        //basicTotemGo.transform.rotation = Quaternion.Euler(0, 90, 0);
+        //basicTotemGo.transform.localScale = Vector3.one;
+
+        //게임 방법 설명중 플레이 안되게 멈추기
+        Time.timeScale = 0;
+
     }
-
-    public Animator anim;
-    private eState state;
-    private Rigidbody rb;
-    public float jumpForce = 5f;
-    private bool isAnimating = false;
-
-    public int heartCnt;
 
     private void Start()
     {
         AudioListener.volume = 5;
-        this.anim = this.GetComponent<Animator>();
-        this.state = eState.Idle;
-        this.rb = GetComponent<Rigidbody>();
+        //토템이 반복적으로 생김
+        InvokeRepeating("GenerateTotemSet", 0.0f, repeatInterval);
     }
 
     private void Update()
     {
+        this.ClickTotem();
+
+    }
+
+    public void GenerateTotemSet()
+    {
+        GameObject totemSetGo = Instantiate(TotemSetPrefab);
+        totemSetGo.transform.position = new Vector3(0, 30f, 100f);
+
+    }
+
+    public void ClickTotem()
+    {
         if (Input.GetMouseButtonDown(0))
         {
-            this.anim.SetInteger("State", 1);
-            this.state = eState.Jump;
-            this.Jump();
-            this.isAnimating = true;
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
 
-            if (isAnimating)
+            if (Physics.Raycast(ray, out hit))
             {
-                this.anim.Play("Jump", 0, 0);
+                Debug.Log(hit);
+
+                //클릭한 토템이 토템1이면
+                if (hit.collider.gameObject.tag == "BasicTotem1")
+                {
+                    SoundManager.PlaySFX("Pop");
+                    //BasicTotems(Clone)을 찾아 부모로 설정하고 토템2로 변경
+                    GameObject parent = GameObject.Find("BasicTotems(Clone)");
+
+                    GameObject basicTotem = Instantiate(TotemPrefabs[1], hit.collider.transform.position, Quaternion.Euler(0, -90, 0));
+                    basicTotem.transform.parent = parent.transform;
+
+                    Destroy(hit.collider.gameObject);
+                }
+                //클릭한 토템이 토템2면
+                else if (hit.collider.gameObject.tag == "BasicTotem2")
+                {
+                    SoundManager.PlaySFX("Pop");
+
+                    //BasicTotems(Clone)을 찾아 부모로 설정하고 토템1로 변경
+                    GameObject parent = GameObject.Find("BasicTotems(Clone)");
+
+                    GameObject basicTotem = Instantiate(TotemPrefabs[0], hit.collider.transform.position, Quaternion.Euler(0, -90, 0));
+                    basicTotem.transform.parent = parent.transform;
+
+                    Destroy(hit.collider.gameObject);
+                }
+
             }
-        }
-        else
-        {
-            this.anim.SetInteger("State", 0);
-            this.state = eState.Idle;
-        }
-
-        if(this.gameObject.transform.position.y > 3.9 || this.gameObject.transform.position.y < -3)
-        {
-            Destroy(this.gameObject);
-        }
-    }
-
-    public void Jump()
-    {
-        rb.velocity = Vector3.up * jumpForce;
-
-        this.state = eState.Jump;
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if(other.gameObject.tag == "Obstacle")
-        {
-            Destroy(this.gameObject);
-        }
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Heart"))
-        {
-            this.heartCnt++;
-            Debug.Log(heartCnt);
-            SoundManager.PlaySFX("Pop");
-            Destroy(collision.gameObject);
-
         }
     }
 }
 
 ```
-▲ FlappyPlayer 스크립트
+▲ MatchingMain 스크립트
 
 ```ts
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FlappyMain : MonoBehaviour
+public class BasicTotem : MonoBehaviour
 {
-    public UIFlappyDirector director;
-
-    public GameObject stemPrefab;
-    public GameObject flowerPrefab;
-    public GameObject heartPrefab;
-
-    private float repeatInterval1 = 3.0f;
-    private float repeatInterval2 = 4.0f;
-    private float repeatInterval3 = 4.5f;
-
-    private void Awake()
-    {
-        //게임 방법 설명중 플레이 안되게 멈추기
-        Time.timeScale = 0;
-    }
-
-    public void Init()
-    {
-        this.director.Init();
-    }
+    public bool isGameOver;
+    public GameObject parentObject;
 
     private void Start()
     {
-        //n초마다 장애물 생성
-        InvokeRepeating("GenerateStem", 0.0f, repeatInterval1);
-        InvokeRepeating("GenerateFlower", 0.0f, repeatInterval2);
-
-        //n초마다 하트 생성
-        InvokeRepeating("GenerateHeart", 0.0f, repeatInterval3);
+        this.parentObject = GameObject.Find("BasicTotems(Clone)");
     }
 
-    public void GenerateStem()
+    private void OnTriggerEnter(Collider other)
     {
-        GameObject stem = Instantiate(stemPrefab);
-        stem.transform.position = new Vector3(12.01f, Random.Range(4.9f, 5.3f), -0.354388f);
-        stem.transform.localScale = new Vector3(Random.Range(1f, 3f), Random.Range(1f, 3f), Random.Range(1f, 3f));
-
+        //베이직 토템 1과 토템2가 부딪히거나, 베이직 토템2와 토템1이 부딪히면 베이직토템 삭제 -> 게임오버(디렉터에서)
+        if(this.gameObject.CompareTag("BasicTotem1") && other.gameObject.CompareTag("Totem2") || this.gameObject.CompareTag("BasicTotem2") && other.gameObject.CompareTag("Totem1"))
+        {
+            Destroy(this.parentObject);
+        }
     }
-
-    public void GenerateFlower()
-    {
-        GameObject flower = Instantiate(flowerPrefab);
-        flower.transform.position = new Vector3(12.01f, -2.53f, -0.354388f);
-        flower.transform.localScale = new Vector3(Random.Range(8.817859f, 15f), Random.Range(8.817859f, 15f), Random.Range(8.817859f, 15f));
-    }
-    public void GenerateHeart()
-    {
-        GameObject heartGo = Instantiate(heartPrefab);
-        heartGo.transform.position = new Vector3(12.01f, Random.Range(-0.1f, 3f), -0.354388f);
-    }
-
 }
 
+
 ```
-▲ FlappyMain 스크립트
+▲ BasicTotem 스크립트
 
 ```ts
 using System.Collections;
@@ -240,44 +215,68 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UIFlappyDirector : MonoBehaviour
+public class UIMatchingDirector : MonoBehaviour
 {
-    public FlappyPlayer player;
-
-    public UIGameOver gameOverPopup;
+    public UIGameOver uiGameOver;
     public UIGameRule uiGameRule;
     public UIMemoryClear uiGameClear;
-    public Text txtCurrentHeartCnt;
-    public Text txtMaxHeartCnt;
+    public GameObject basicTotem;
+    public int totemCnt;
+    public Text txtCurrentTotemCnt;
+    public Text txtMaxTotemCnt;
+    public bool isClear;
 
-    public void Init()
-    {
+    public Text timerText;
 
-    }
+    public float currentTime;
+
 
     private void Start()
     {
-        this.txtMaxHeartCnt.text = 5.ToString();
+        this.basicTotem = GameObject.Find("BasicTotems(Clone)");
+        this.txtMaxTotemCnt.text = 3.ToString();
+
+        //매칭 토템 이벤트
+        EventDispatcher.instance.AddEventHandler((int)EventEnum.eEventType.DestroyTotem, new EventHandler((type) =>
+        {
+            this.PlusTotemCnt();
+        }));
     }
 
     private void Update()
     {
-        if(player == null)
-        {
-            this.gameOverPopup.gameObject.SetActive(true);
-        }
+        this.ShowGameOver();
 
-        this.txtCurrentHeartCnt.text = this.player.heartCnt.ToString();
+        this.txtCurrentTotemCnt.text = this.totemCnt.ToString();
 
-        if(this.txtCurrentHeartCnt.text == this.txtMaxHeartCnt.text)
+        if (this.txtCurrentTotemCnt.text == this.txtMaxTotemCnt.text)
         {
             this.uiGameClear.gameObject.SetActive(true);
         }
     }
+
+    public void ShowGameOver()
+    {
+        if (this.basicTotem == null)
+        {
+            this.uiGameOver.gameObject.SetActive(true);
+        }
+    }
+
+    public void PlusTotemCnt()
+    {
+        totemCnt++;
+    }
+
+    public void TimeStop()
+    {
+        Time.timeScale = 0;
+    }
 }
 
+
 ```
-▲ UIFlappyDirector 스크립트
+▲ UIMatchingDirector 스크립트
 </details>
 &nbsp;
 
