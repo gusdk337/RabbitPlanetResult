@@ -1057,4 +1057,4 @@ https://github.com/gusdk337/RabbitPlanetResult/assets/51481890/cdffae3f-7794-466
 
 https://github.com/gusdk337/RabbitPlanetResult/assets/51481890/4378aacc-a891-450a-a1b6-039d9f874d5c
 
-▲ 메인 게임 BGM 자체 제작
+▲ 미니 게임 BGM 자체 제작
